@@ -87,7 +87,7 @@ const Customers = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Orders</SelectItem>
-                <SelectItem value="high">High Volume (>5)</SelectItem>
+                <SelectItem value="high">High Volume ({'>'}5)</SelectItem>
                 <SelectItem value="low">Low Volume (≤5)</SelectItem>
               </SelectContent>
             </Select>
