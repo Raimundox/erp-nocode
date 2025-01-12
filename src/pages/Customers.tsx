@@ -14,25 +14,34 @@ import {
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface Customer {
+export interface Customer {
   id: number;
   name: string;
   email: string;
   phone: string;
   category: string;
   orders: number;
+  customFields?: { [key: string]: string };
 }
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
-  const [orderFilter, setOrderFilter] = useState<string>("");
-
-  const customers: Customer[] = [
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [orderFilter, setOrderFilter] = useState<string>("all");
+  const [customers, setCustomers] = useState<Customer[]>([
     { id: 1, name: "John Doe", email: "john@example.com", phone: "(11) 99999-9999", category: "VIP", orders: 5 },
     { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "(11) 88888-8888", category: "Regular", orders: 3 },
     { id: 3, name: "Bob Johnson", email: "bob@example.com", phone: "(11) 77777-7777", category: "Premium", orders: 8 },
-  ];
+  ]);
+
+  const handleAddCustomer = (newCustomer: Omit<Customer, "id" | "orders">) => {
+    const customerToAdd: Customer = {
+      ...newCustomer,
+      id: customers.length + 1,
+      orders: 0,
+    };
+    setCustomers([...customers, customerToAdd]);
+  };
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch = 
@@ -40,8 +49,8 @@ const Customers = () => {
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.includes(searchTerm);
     
-    const matchesCategory = !categoryFilter || customer.category === categoryFilter;
-    const matchesOrders = !orderFilter || 
+    const matchesCategory = categoryFilter === "all" || customer.category === categoryFilter;
+    const matchesOrders = orderFilter === "all" || 
       (orderFilter === "high" ? customer.orders > 5 : customer.orders <= 5);
 
     return matchesSearch && matchesCategory && matchesOrders;
@@ -53,7 +62,7 @@ const Customers = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
-        <AddCustomerDialog />
+        <AddCustomerDialog onAddCustomer={handleAddCustomer} />
       </div>
 
       <Card className="p-6">

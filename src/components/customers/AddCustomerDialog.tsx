@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Plus } from "lucide-react";
+import { Customer } from "@/pages/Customers";
+import { useToast } from "@/components/ui/use-toast";
 
 interface CustomerFormData {
   name: string;
@@ -14,15 +16,33 @@ interface CustomerFormData {
   customFields: { [key: string]: string };
 }
 
-export function AddCustomerDialog() {
+interface AddCustomerDialogProps {
+  onAddCustomer: (customer: Omit<Customer, "id" | "orders">) => void;
+}
+
+export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
   const [open, setOpen] = useState(false);
   const form = useForm<CustomerFormData>();
   const [customFields, setCustomFields] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const onSubmit = (data: CustomerFormData) => {
-    console.log("New customer data:", data);
+    onAddCustomer({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      category: data.category,
+      customFields: data.customFields,
+    });
+    
+    toast({
+      title: "Success",
+      description: "Customer added successfully",
+    });
+    
     setOpen(false);
     form.reset();
+    setCustomFields([]);
   };
 
   const addCustomField = () => {
