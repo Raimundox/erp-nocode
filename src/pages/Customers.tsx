@@ -111,6 +111,7 @@ const Customers = () => {
               <TableHead>Phone</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Orders</TableHead>
+              <TableHead>Custom Fields</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -121,6 +122,13 @@ const Customers = () => {
                 <TableCell>{customer.phone}</TableCell>
                 <TableCell>{customer.category}</TableCell>
                 <TableCell>{customer.orders}</TableCell>
+                <TableCell>
+                  {customer.customFields && Object.entries(customer.customFields).map(([key, value]) => (
+                    <div key={key} className="text-sm">
+                      <span className="font-medium">{key}:</span> {value}
+                    </div>
+                  ))}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
