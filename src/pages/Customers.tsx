@@ -73,7 +73,7 @@ const Customers = () => {
                 <SelectValue placeholder="Filter by Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {uniqueCategories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -86,7 +86,7 @@ const Customers = () => {
                 <SelectValue placeholder="Filter by Orders" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Orders</SelectItem>
+                <SelectItem value="all">All Orders</SelectItem>
                 <SelectItem value="high">High Volume ({'>'}5)</SelectItem>
                 <SelectItem value="low">Low Volume (≤5)</SelectItem>
               </SelectContent>
