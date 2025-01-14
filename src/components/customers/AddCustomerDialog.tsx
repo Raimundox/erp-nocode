@@ -8,6 +8,11 @@ import { Plus } from "lucide-react";
 import { Customer } from "@/pages/Customers";
 import { useToast } from "@/components/ui/use-toast";
 
+interface CustomField {
+  name: string;
+  value: string;
+}
+
 interface CustomerFormData {
   name: string;
   email: string;
@@ -23,16 +28,24 @@ interface AddCustomerDialogProps {
 export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
   const [open, setOpen] = useState(false);
   const form = useForm<CustomerFormData>();
-  const [customFields, setCustomFields] = useState<string[]>([]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const { toast } = useToast();
 
   const onSubmit = (data: CustomerFormData) => {
+    const customFieldsObject = customFields.reduce((acc, field) => {
+      const fieldValue = form.getValues(`customFields.${field.name}`);
+      if (fieldValue) {
+        acc[field.name] = fieldValue;
+      }
+      return acc;
+    }, {} as { [key: string]: string });
+
     onAddCustomer({
       name: data.name,
       email: data.email,
       phone: data.phone,
       category: data.category,
-      customFields: data.customFields,
+      customFields: customFieldsObject,
     });
     
     toast({
@@ -46,7 +59,10 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
   };
 
   const addCustomField = () => {
-    setCustomFields([...customFields, ""]);
+    const fieldName = prompt("Enter the name for the new column (e.g., 'status'):");
+    if (fieldName) {
+      setCustomFields([...customFields, { name: fieldName, value: "" }]);
+    }
   };
 
   return (
@@ -112,16 +128,16 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
               )}
             />
             
-            {customFields.map((_, index) => (
+            {customFields.map((field) => (
               <FormField
-                key={index}
+                key={field.name}
                 control={form.control}
-                name={`customFields.field${index}`}
-                render={({ field }) => (
+                name={`customFields.${field.name}`}
+                render={({ field: formField }) => (
                   <FormItem>
-                    <FormLabel>Custom Field {index + 1}</FormLabel>
+                    <FormLabel className="capitalize">{field.name}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Custom field value" {...field} />
+                      <Input placeholder={`Enter ${field.name}`} {...formField} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -129,7 +145,7 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
             ))}
             
             <Button type="button" variant="outline" onClick={addCustomField} className="w-full">
-              Add Custom Field
+              Add Custom Column
             </Button>
             
             <Button type="submit" className="w-full">
