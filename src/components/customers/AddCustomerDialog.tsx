@@ -49,8 +49,8 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
     });
     
     toast({
-      title: "Success",
-      description: "Customer added successfully",
+      title: "Sucesso",
+      description: "Cliente adicionado com sucesso",
     });
     
     setOpen(false);
@@ -59,7 +59,7 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
   };
 
   const addCustomField = () => {
-    const fieldName = prompt("Enter the name for the new column (e.g., 'status'):");
+    const fieldName = prompt("Digite o nome da nova coluna (ex: 'status'):");
     if (fieldName) {
       setCustomFields([...customFields, { name: fieldName, value: "" }]);
     }
@@ -70,12 +70,12 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
-          Add Customer
+          Adicionar Cliente
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Customer</DialogTitle>
+          <DialogTitle>Adicionar Novo Cliente</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -84,9 +84,9 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Customer name" {...field} />
+                    <Input placeholder="Nome do cliente" {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -98,7 +98,7 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Email address" {...field} />
+                    <Input type="email" placeholder="Endereço de email" {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -108,9 +108,9 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Telefone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone number" {...field} />
+                    <Input placeholder="Número de telefone" {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -120,9 +120,9 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Categoria</FormLabel>
                   <FormControl>
-                    <Input placeholder="Customer category" {...field} />
+                    <Input placeholder="Categoria do cliente" {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -137,7 +137,7 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
                   <FormItem>
                     <FormLabel className="capitalize">{field.name}</FormLabel>
                     <FormControl>
-                      <Input placeholder={`Enter ${field.name}`} {...formField} />
+                      <Input placeholder={`Digite ${field.name}`} {...formField} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -145,11 +145,11 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
             ))}
             
             <Button type="button" variant="outline" onClick={addCustomField} className="w-full">
-              Add Custom Column
+              Adicionar Nova Coluna
             </Button>
             
             <Button type="submit" className="w-full">
-              Save Customer
+              Salvar Cliente
             </Button>
           </form>
         </Form>

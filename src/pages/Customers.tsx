@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ChevronUp, ChevronDown, Filter } from "lucide-react";
+import { Search, ChevronUp, ChevronDown, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/components/ui/use-toast";
 
 export interface Customer {
   id: number;
@@ -37,18 +38,45 @@ type SortConfig = {
   direction: SortDirection;
 };
 
+interface Column {
+  key: string;
+  label: string;
+  isCustom?: boolean;
+}
+
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [orderFilter, setOrderFilter] = useState<string>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: null });
-  const [columnFilters, setColumnFilters] = useState<{ [key in keyof Partial<Customer>]: string }>({});
+  const [columnFilters, setColumnFilters] = useState<{ [key: string]: string }>({});
+  const { toast } = useToast();
   
   const [customers, setCustomers] = useState<Customer[]>([
     { id: 1, name: "John Doe", email: "john@example.com", phone: "(11) 99999-9999", category: "VIP", orders: 5 },
     { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "(11) 88888-8888", category: "Regular", orders: 3 },
     { id: 3, name: "Bob Johnson", email: "bob@example.com", phone: "(11) 77777-7777", category: "Premium", orders: 8 },
   ]);
+
+  const [columns, setColumns] = useState<Column[]>([
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'category', label: 'Category' },
+    { key: 'orders', label: 'Orders' },
+  ]);
+
+  const handleAddColumn = () => {
+    const columnName = prompt("Digite o nome da nova coluna:");
+    if (columnName) {
+      const newColumnKey = columnName.toLowerCase().replace(/\s+/g, '_');
+      setColumns([...columns, { key: newColumnKey, label: columnName, isCustom: true }]);
+      toast({
+        title: "Coluna adicionada",
+        description: `A coluna "${columnName}" foi adicionada com sucesso.`,
+      });
+    }
+  };
 
   const handleAddCustomer = (newCustomer: Omit<Customer, "id" | "orders">) => {
     const customerToAdd: Customer = {
@@ -70,7 +98,7 @@ const Customers = () => {
     setSortConfig({ column, direction });
   };
 
-  const handleColumnFilter = (column: keyof Customer, value: string) => {
+  const handleColumnFilter = (column: string, value: string) => {
     setColumnFilters(prev => ({
       ...prev,
       [column]: value,
@@ -87,10 +115,9 @@ const Customers = () => {
     const matchesOrders = orderFilter === "all" || 
       (orderFilter === "high" ? customer.orders > 5 : customer.orders <= 5);
 
-    // Apply column filters
     const matchesColumnFilters = Object.entries(columnFilters).every(([column, filterValue]) => {
       if (!filterValue) return true;
-      const value = customer[column as keyof Customer];
+      const value = column in customer ? customer[column as keyof Customer] : customer.customFields?.[column];
       return value?.toString().toLowerCase().includes(filterValue.toLowerCase());
     });
 
@@ -98,8 +125,8 @@ const Customers = () => {
   }).sort((a, b) => {
     if (!sortConfig.column || !sortConfig.direction) return 0;
     
-    const aValue = a[sortConfig.column];
-    const bValue = b[sortConfig.column];
+    const aValue = sortConfig.column in a ? a[sortConfig.column] : a.customFields?.[sortConfig.column];
+    const bValue = sortConfig.column in b ? b[sortConfig.column] : b.customFields?.[sortConfig.column];
     
     if (sortConfig.direction === 'asc') {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
@@ -110,31 +137,31 @@ const Customers = () => {
 
   const uniqueCategories = Array.from(new Set(customers.map(c => c.category)));
 
-  const renderColumnHeader = (column: keyof Customer, label: string) => (
+  const renderColumnHeader = (column: Column) => (
     <div className="flex items-center space-x-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent">
-            <span>{label}</span>
-            {sortConfig.column === column && (
+            <span>{column.label}</span>
+            {sortConfig.column === column.key && (
               sortConfig.direction === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />
             )}
             <Filter className="ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => handleSort(column)}>
-            Sort Ascending
+          <DropdownMenuItem onClick={() => handleSort(column.key as keyof Customer)}>
+            Ordenar Crescente
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleSort(column)}>
-            Sort Descending
+          <DropdownMenuItem onClick={() => handleSort(column.key as keyof Customer)}>
+            Ordenar Decrescente
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <div className="p-2">
             <Input
-              placeholder={`Filter ${label}...`}
-              value={columnFilters[column] || ''}
-              onChange={(e) => handleColumnFilter(column, e.target.value)}
+              placeholder={`Filtrar ${column.label}...`}
+              value={columnFilters[column.key] || ''}
+              onChange={(e) => handleColumnFilter(column.key, e.target.value)}
               className="h-8"
             />
           </div>
@@ -146,7 +173,7 @@ const Customers = () => {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
         <AddCustomerDialog onAddCustomer={handleAddCustomer} />
       </div>
 
@@ -156,7 +183,7 @@ const Customers = () => {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Search customers..."
+                placeholder="Buscar clientes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -164,10 +191,10 @@ const Customers = () => {
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Category" />
+                <SelectValue placeholder="Filtrar por Categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">Todas Categorias</SelectItem>
                 {uniqueCategories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -177,43 +204,38 @@ const Customers = () => {
             </Select>
             <Select value={orderFilter} onValueChange={setOrderFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Orders" />
+                <SelectValue placeholder="Filtrar por Pedidos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Orders</SelectItem>
-                <SelectItem value="high">High Volume ({'>'}5)</SelectItem>
-                <SelectItem value="low">Low Volume (≤5)</SelectItem>
+                <SelectItem value="all">Todos Pedidos</SelectItem>
+                <SelectItem value="high">Alto Volume ({'>'}5)</SelectItem>
+                <SelectItem value="low">Baixo Volume (≤5)</SelectItem>
               </SelectContent>
             </Select>
+            <Button onClick={handleAddColumn} variant="outline" size="icon">
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{renderColumnHeader('name', 'Name')}</TableHead>
-              <TableHead>{renderColumnHeader('email', 'Email')}</TableHead>
-              <TableHead>{renderColumnHeader('phone', 'Phone')}</TableHead>
-              <TableHead>{renderColumnHeader('category', 'Category')}</TableHead>
-              <TableHead>{renderColumnHeader('orders', 'Orders')}</TableHead>
-              <TableHead>Custom Fields</TableHead>
+              {columns.map((column) => (
+                <TableHead key={column.key}>{renderColumnHeader(column)}</TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredCustomers.map((customer) => (
               <TableRow key={customer.id}>
-                <TableCell>{customer.name}</TableCell>
-                <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.phone}</TableCell>
-                <TableCell>{customer.category}</TableCell>
-                <TableCell>{customer.orders}</TableCell>
-                <TableCell>
-                  {customer.customFields && Object.entries(customer.customFields).map(([key, value]) => (
-                    <div key={key} className="text-sm">
-                      <span className="font-medium">{key}:</span> {value}
-                    </div>
-                  ))}
-                </TableCell>
+                {columns.map((column) => (
+                  <TableCell key={`${customer.id}-${column.key}`}>
+                    {column.isCustom 
+                      ? customer.customFields?.[column.key] || '-'
+                      : customer[column.key as keyof Customer]}
+                  </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>
