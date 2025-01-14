@@ -232,8 +232,8 @@ const Customers = () => {
                 {columns.map((column) => (
                   <TableCell key={`${customer.id}-${column.key}`}>
                     {column.isCustom 
-                      ? customer.customFields?.[column.key] || '-'
-                      : customer[column.key as keyof Customer]}
+                      ? (customer.customFields?.[column.key] || '-')
+                      : String(customer[column.key as keyof Customer])}
                   </TableCell>
                 ))}
               </TableRow>
