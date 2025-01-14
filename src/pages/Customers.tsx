@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ChevronUp, ChevronDown, Filter, Plus } from "lucide-react";
+import { Search, ChevronUp, ChevronDown, Filter, Plus, MoreVertical, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -103,6 +103,22 @@ const Customers = () => {
       ...prev,
       [column]: value,
     }));
+  };
+
+  const handleDeleteCustomer = (id: number) => {
+    setCustomers(customers.filter(customer => customer.id !== id));
+    toast({
+      title: "Cliente excluído",
+      description: "O cliente foi excluído com sucesso.",
+    });
+  };
+
+  const handleEditCustomer = (id: number) => {
+    // Por enquanto apenas mostra um toast, você pode implementar a edição depois
+    toast({
+      title: "Editar cliente",
+      description: "Funcionalidade de edição será implementada em breve.",
+    });
   };
 
   const filteredCustomers = customers.filter((customer) => {
@@ -224,6 +240,7 @@ const Customers = () => {
               {columns.map((column) => (
                 <TableHead key={column.key}>{renderColumnHeader(column)}</TableHead>
               ))}
+              <TableHead className="w-[100px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -236,6 +253,29 @@ const Customers = () => {
                       : String(customer[column.key as keyof Customer])}
                   </TableCell>
                 ))}
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditCustomer(customer.id)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={() => handleDeleteCustomer(customer.id)}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
