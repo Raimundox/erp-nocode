@@ -29,7 +29,7 @@ export interface Customer {
   phone: string;
   category: string;
   orders: number;
-  customFields?: { [key: string]: string };
+  customFields?: { [key: string]: string | string[] };
 }
 
 type SortDirection = 'asc' | 'desc' | null;
@@ -42,6 +42,8 @@ interface Column {
   key: string;
   label: string;
   isCustom?: boolean;
+  type?: 'text' | 'multiselect';
+  options?: string[];
 }
 
 const Customers = () => {
@@ -133,7 +135,7 @@ const Customers = () => {
     const matchesColumnFilters = Object.entries(columnFilters).every(([column, filterValue]) => {
       if (!filterValue) return true;
       const value = column in customer ? customer[column as keyof Customer] : customer.customFields?.[column];
-      return value?.toString().toLowerCase().includes(filterValue.toLowerCase());
+      return Array.isArray(value) ? value.includes(filterValue) : value?.toString().toLowerCase().includes(filterValue.toLowerCase());
     });
 
     return matchesSearch && matchesCategory && matchesOrders && matchesColumnFilters;
@@ -173,19 +175,23 @@ const Customers = () => {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <div className="p-2">
-            {column.key === 'category' ? (
+            {column.key === 'category' || (column.isCustom && column.type === 'multiselect') ? (
               <Select
                 value={columnFilters[column.key] || 'all'}
                 onValueChange={(value) => handleColumnFilter(column.key, value)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Todas Categorias" />
+                  <SelectValue placeholder={`Todas ${column.label}`} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas Categorias</SelectItem>
-                  {uniqueCategories.map((category) => (
+                  <SelectItem value="all">Todas {column.label}</SelectItem>
+                  {column.key === 'category' ? uniqueCategories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
+                    </SelectItem>
+                  )) : column.options?.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
                     </SelectItem>
                   ))}
                 </SelectContent>

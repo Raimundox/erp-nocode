@@ -7,10 +7,13 @@ import { useForm } from "react-hook-form";
 import { Plus } from "lucide-react";
 import { Customer } from "@/pages/Customers";
 import { useToast } from "@/components/ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CustomField {
   name: string;
   value: string;
+  type: 'text' | 'multiselect';
+  options?: string[];
 }
 
 interface CustomerFormData {
@@ -18,7 +21,7 @@ interface CustomerFormData {
   email: string;
   phone: string;
   category: string;
-  customFields: { [key: string]: string };
+  customFields: { [key: string]: string | string[] };
 }
 
 interface AddCustomerDialogProps {
@@ -38,7 +41,7 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
         acc[field.name] = fieldValue;
       }
       return acc;
-    }, {} as { [key: string]: string });
+    }, {} as { [key: string]: string | string[] });
 
     onAddCustomer({
       name: data.name,
@@ -59,9 +62,24 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
   };
 
   const addCustomField = () => {
-    const fieldName = prompt("Digite o nome da nova coluna (ex: 'status'):");
-    if (fieldName) {
-      setCustomFields([...customFields, { name: fieldName, value: "" }]);
+    const fieldType = prompt("Digite o tipo da coluna (text/multiselect):");
+    if (fieldType && (fieldType === 'text' || fieldType === 'multiselect')) {
+      const fieldName = prompt("Digite o nome da nova coluna (ex: 'tags'):");
+      if (fieldName) {
+        let options: string[] = [];
+        if (fieldType === 'multiselect') {
+          const optionsInput = prompt("Digite as opções separadas por vírgula (ex: 'VIP,Regular,Novo'):");
+          if (optionsInput) {
+            options = optionsInput.split(',').map(opt => opt.trim());
+          }
+        }
+        setCustomFields([...customFields, { 
+          name: fieldName, 
+          value: "", 
+          type: fieldType as 'text' | 'multiselect',
+          options: fieldType === 'multiselect' ? options : undefined
+        }]);
+      }
     }
   };
 
@@ -137,7 +155,25 @@ export function AddCustomerDialog({ onAddCustomer }: AddCustomerDialogProps) {
                   <FormItem>
                     <FormLabel className="capitalize">{field.name}</FormLabel>
                     <FormControl>
-                      <Input placeholder={`Digite ${field.name}`} {...formField} />
+                      {field.type === 'multiselect' ? (
+                        <Select
+                          value={formField.value as string}
+                          onValueChange={formField.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={`Selecione ${field.name}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options?.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input placeholder={`Digite ${field.name}`} {...formField} />
+                      )}
                     </FormControl>
                   </FormItem>
                 )}
