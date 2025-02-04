@@ -114,7 +114,6 @@ const Customers = () => {
   };
 
   const handleEditCustomer = (id: number) => {
-    // Por enquanto apenas mostra um toast, você pode implementar a edição depois
     toast({
       title: "Editar cliente",
       description: "Funcionalidade de edição será implementada em breve.",
@@ -174,12 +173,31 @@ const Customers = () => {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <div className="p-2">
-            <Input
-              placeholder={`Filtrar ${column.label}...`}
-              value={columnFilters[column.key] || ''}
-              onChange={(e) => handleColumnFilter(column.key, e.target.value)}
-              className="h-8"
-            />
+            {column.key === 'category' ? (
+              <Select
+                value={columnFilters[column.key] || 'all'}
+                onValueChange={(value) => handleColumnFilter(column.key, value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Todas Categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas Categorias</SelectItem>
+                  {uniqueCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                placeholder={`Filtrar ${column.label}...`}
+                value={columnFilters[column.key] || ''}
+                onChange={(e) => handleColumnFilter(column.key, e.target.value)}
+                className="h-8"
+              />
+            )}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
